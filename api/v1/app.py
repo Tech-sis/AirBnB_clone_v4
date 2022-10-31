@@ -22,7 +22,9 @@ host = os.getenv('HBNB_API_HOST', '0.0.0.0')
 port = os.getenv('HBNB_API_PORT', 5000)
 
 # Cross-Origin Resource Sharing
-cors = CORS(app, resources={r'/*': {'origins': host}})
+# cors = CORS(app, origins="0.0.0.0")
+# cors = CORS(app, resources={r'/*': {'origins': host}})
+# cors = CORS(app, resources={r"/api/v1/*": {"origins": "*"}})
 
 # app_views BluePrint defined in api.v1.views
 app.register_blueprint(app_views)
@@ -36,6 +38,28 @@ def teardown_db(exception):
     the current SQLAlchemy Session
     """
     storage.close()
+
+
+@app.errorhandler(404)
+def handle_404(exception):
+    """
+    handles 404 errors, in the event that global error handler fails
+    """
+    code = exception.__str__().split()[0]
+    description = exception.description
+    message = {'error': description}
+    return make_response(jsonify(message), code)
+
+
+@app.errorhandler(400)
+def handle_404(exception):
+    """
+    handles 400 errros, in the event that global error handler fails
+    """
+    code = exception.__str__().split()[0]
+    description = exception.description
+    message = {'error': description}
+    return make_response(jsonify(message), code)
 
 
 @app.errorhandler(Exception)
@@ -52,6 +76,20 @@ def global_error_handler(err):
         message = {'error': err}
         code = 500
     return make_response(jsonify(message), code)
+
+
+'''
+@app.after_request
+def add_cors_headers(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Credentials', 'true')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+    response.headers.add('Access-Control-Allow-Headers', 'Cache-Control')
+    response.headers.add('Access-Control-Allow-Headers', 'X-Requested-With')
+    response.headers.add('Access-Control-Allow-Headers', 'Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE')
+    return response;
+'''
 
 
 def setup_global_errors():
